@@ -11,7 +11,6 @@ namespace CapitalPlacementTask.Domain.Entities
         public Guid id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
-        public PersonalInformation personalInformation { get; set; }
-        public List<CustomQuestion> CustomQuestions { get; set; } = new();
+        public PersonalInformation PersonalInformation { get; set; }
     }
 }

@@ -24,5 +24,6 @@ namespace CapitalPlacementTask.Domain.Entities
 
         public string IdNumber { get; set; }
         public Gender gender { get; set; }
+        public List<CustomQuestion> CustomQuestions { get; set; } = new();
     }
 }

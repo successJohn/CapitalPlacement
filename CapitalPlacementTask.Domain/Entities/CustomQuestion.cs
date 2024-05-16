@@ -9,7 +9,7 @@ namespace CapitalPlacementTask.Domain.Entities
 {
     public class CustomQuestion
     {       
-        public Guid Id { get; set; }
+        public Guid id { get; set; }
         public string Question { get; set; }
         public QuestionType Type { get; set; }
         public List<QuestionChoices> Choices { get; set; } = new();
