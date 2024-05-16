@@ -1,4 +1,6 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using CapitalPlacementTask.Application.Interfaces;
+using CapitalPlacementTask.Infrastructure.Services;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -11,7 +13,7 @@ namespace CapitalPlacementTask.Infrastructure
 {
     public static class InfrastructureServiceRegistration
     {
-        public static void ConfigureCosmosDb(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddSingleton((provider) =>
             {
@@ -24,12 +26,16 @@ namespace CapitalPlacementTask.Infrastructure
                     ApplicationName = databaseName,
                     ConnectionMode = ConnectionMode.Gateway,
                 };
-               
+
                 var cosmosClient = new CosmosClient(endpointUri, primaryKey, cosmosClientOptions);
 
 
                 return cosmosClient;
             });
+
+            services.AddScoped<IProgramFormService, ProgramFormService>();
+
+            return services;
         }
     }
 }
