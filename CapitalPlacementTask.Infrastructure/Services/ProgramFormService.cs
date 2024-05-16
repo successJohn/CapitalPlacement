@@ -1,14 +1,21 @@
-﻿using System;
+﻿using CapitalPlacementTask.Application.DTO.ProgramForm;
+using CapitalPlacementTask.Application.Interfaces;
+using CapitalPlacementTask.Application.Utils;
+using CapitalPlacementTask.Domain.Entities;
+using CapitalPlacementTask.Domain.Enums;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CapitalPlacementTask.Infrastructure.Services
 {
-    public class ProgramFormService
+    public class ProgramFormService : IProgramFormService
     {
         private readonly Container _programDetailContainer;
 
@@ -17,49 +24,123 @@ namespace CapitalPlacementTask.Infrastructure.Services
             var databaseName = configuration["CosmosDbSettings:DatabaseName"];
             _programDetailContainer = cosmosClient.GetContainer(databaseName, "ProgramDetail");
         }
-        public async Task<Guid> CreateProgram(CreateProgramDTO model)
+
+        public async Task<BaseResponse<string>> CreateAsync(CreateProgramFormDto programDto)
         {
-            var programId = Guid.NewGuid();
-            var personalInfoId = Guid.NewGuid();
-            var program = new ProgramDetail
+            var program = new ProgramForm
             {
-                id = programId,
-                Title = model.Title,
-                Description = model.Description,
-
-                personalInformation = new PersonalInformation
+                id = Guid.NewGuid(),
+                Title = programDto.Title,
+                Description = programDto.Description,
+                PersonalInformation = new PersonalInformation
                 {
-                    Id = personalInfoId,
-                    FirstName = model.personalInformation?.FirstName,
-                    LastName = model.personalInformation?.LastName,
-                    Email = model.personalInformation?.Email,
-                    Nationality = model.personalInformation?.Nationality,
-                    DateOfBirth = model.personalInformation!.DateOfBirth,
-                    IdNumber = model.personalInformation?.IdNumber,
-                    CurrentResidence = model.personalInformation?.CurrentResidence
+                    FirstName = programDto.PersonalInformation.FirstName,
+                    LastName = programDto.PersonalInformation.LastName,
+                    Email = programDto.PersonalInformation.Email,
+                    Phone = programDto.PersonalInformation.Phone,
+                    Nationality = programDto.PersonalInformation.Nationality
 
-                },
-                PersonalInformationId = personalInfoId/*,
-                CustomQuestions = model.createQuestionDTO.Select(x => new Question
-                {
-
-                }).ToList(),*/
-
+                }
             };
 
+            // creates custom questions to add to the personal information
+            var personalInformationQuestion = CreateAdditionalQuestions(programDto.PersonalInformation.CustomQuestions);
+            if (personalInformationQuestion.Errors.Any())
+            {
+                return new BaseResponse<string>(personalInformationQuestion.ResponseMessage, 400);
+            }
+
+            program.PersonalInformation.CustomQuestions.AddRange(personalInformationQuestion.Data);
+
+            program.id = Guid.NewGuid();
             await _programDetailContainer.CreateItemAsync(program);
 
-            return program.id;
+            return new BaseResponse<string>("Created");
         }
 
-        public async Task<ProgramDetail> GetApplicationForm(Guid id)
+        private BaseResponse<List<CustomQuestion>> CreateAdditionalQuestions(List<QuestionDTO> additionalQuestions)
         {
+            List<CustomQuestion> customQuestions = new();
 
-            var applicationForm = await _programDetailContainer.ReadItemAsync<ProgramDetail>(id.ToString(), new PartitionKey(id.ToString()));
+            var response = new BaseResponse<List<CustomQuestion>>();
+
+            foreach (var questionDto in additionalQuestions)
+            {
+                var question = CreateCustomQuestion(questionDto);
+
+                if (questionDto.QuestionType == QuestionType.Dropdown || questionDto.QuestionType == QuestionType.MultiChoice)
+                {
+                    //multichoice and dropdown questions must have more than one choice
+                    if (questionDto.Choices == null || questionDto.Choices.Count < 1)
+                    {
+                        response.ResponseMessage = "you must select more than one choice";
+                        return response;
+                    }
+                    question = CreateQuestionsWithMultipleChoices(question, questionDto);// this works for dropdown and multiple choice questions
+                }
+
+                customQuestions.Add(question);
+            }
+
+            response.Data = customQuestions;
+            return response;
+        }
+
+        private CustomQuestion CreateCustomQuestion(QuestionDTO questionDto)
+        {
+            var question = new CustomQuestion
+            {
+                id = Guid.NewGuid(),
+                Question = questionDto.Question,
+                Type = questionDto.QuestionType,
+                MaxChoices = questionDto.MaxChoices,
+                HasOtherOption = questionDto.HasOtherOption,
+               
+            };
+
+            return question;
+        }
+
+        private CustomQuestion CreateQuestionsWithMultipleChoices(CustomQuestion question, QuestionDTO questionDto)
+        {
+            var choices = questionDto.Choices!.Select(x => new QuestionChoices
+            {
+                id = Guid.NewGuid(),
+                Choice = x,
+                CustomQuestionId = question.id
+            });
+
+            question.Choices.AddRange(choices);
+            return question;
+        }
 
 
-            return applicationForm.Resource;
+        public async Task<BaseResponse<bool>> UpdateAsync(Guid id, CreateProgramFormDto programDto)
+        {
+            var applicationForm = await _programDetailContainer.ReadItemAsync<ProgramForm>(id.ToString(), new PartitionKey(id.ToString()));
 
+            if (applicationForm == null)
+            {
+                return new BaseResponse<bool>("Form not found");
+            }
+
+            applicationForm.Resource.Title = programDto.Title;
+            applicationForm.Resource.Description = programDto.Description;
+            applicationForm.Resource.PersonalInformation.FirstName = string.IsNullOrWhiteSpace(programDto.PersonalInformation.FirstName) ? applicationForm.Resource.PersonalInformation.FirstName : programDto.PersonalInformation.FirstName;
+            applicationForm.Resource.PersonalInformation.LastName = string.IsNullOrWhiteSpace(programDto.PersonalInformation.LastName) ? applicationForm.Resource.PersonalInformation.LastName : programDto.PersonalInformation.LastName;
+            applicationForm.Resource.PersonalInformation.Email = string.IsNullOrWhiteSpace(programDto.PersonalInformation.Email) ? applicationForm.Resource.PersonalInformation.Email : programDto.PersonalInformation.Email;
+            applicationForm.Resource.PersonalInformation.Phone = string.IsNullOrWhiteSpace(programDto.PersonalInformation.Phone) ? applicationForm.Resource.PersonalInformation.Phone : programDto.PersonalInformation.Phone;
+            applicationForm.Resource.PersonalInformation.Nationality = string.IsNullOrWhiteSpace(programDto.PersonalInformation.Nationality) ? applicationForm.Resource.PersonalInformation.Nationality : programDto.PersonalInformation.Nationality;
+            applicationForm.Resource.PersonalInformation.CurrentResidence = string.IsNullOrWhiteSpace(programDto.PersonalInformation.CurrentResidence) ? applicationForm.Resource.PersonalInformation.CurrentResidence : programDto.PersonalInformation.CurrentResidence;
+            applicationForm.Resource.PersonalInformation.IdNumber = string.IsNullOrWhiteSpace(programDto.PersonalInformation.IdNumber) ? applicationForm.Resource.PersonalInformation.IdNumber : programDto.PersonalInformation.IdNumber;
+            applicationForm.Resource.PersonalInformation.DateOfBirth = programDto.PersonalInformation.DateOfBirth;
+            // validate questions in the put method
+            var questionsFormat = CreateAdditionalQuestions(programDto.PersonalInformation.CustomQuestions).Data;
+            applicationForm.Resource.PersonalInformation!.CustomQuestions.AddRange(questionsFormat);
+            await _programDetailContainer.ReplaceItemAsync(applicationForm.Resource, applicationForm.Resource.id.ToString());
+            return new BaseResponse<bool>(true);
         }
     }
 }
+
+   

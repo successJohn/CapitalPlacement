@@ -12,6 +12,7 @@ namespace CapitalPlacementTask.Domain.Enums
         YesOrNo,
         Dropdown,
         Date,
-        Number
+        Number,
+        MultiChoice
     }
 }

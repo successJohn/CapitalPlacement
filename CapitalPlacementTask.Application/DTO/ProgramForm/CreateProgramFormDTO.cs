@@ -12,7 +12,6 @@ namespace CapitalPlacementTask.Application.DTO.ProgramForm
         public required string Title { get; set; }
         public required string Description { get; set; }
         public required PersonalInformationDto PersonalInformation { get; set; }
-        public List<QuestionDTO> CustomQuestions { get; set; } = new();
     }
 
     public class PersonalInformationDto
@@ -24,7 +23,7 @@ namespace CapitalPlacementTask.Application.DTO.ProgramForm
         public string Nationality { get; set; }
         public string CurrentResidence { get; set; }
         public string IdNumber { get; set; }
-        public string DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
         public Gender Gender { get; set; }
         public List<QuestionDTO> CustomQuestions { get; set; } = [];
 
