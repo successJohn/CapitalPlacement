@@ -11,7 +11,7 @@ namespace CapitalPlacementTask.Application.DTO.ProgramForm
     {
         public required string Title { get; set; }
         public required string Description { get; set; }
-        public required PersonalInformationDto PersonalInformation { get; set; }
+        public required PersonalInformationDto PersonalInformation { get; set; } 
     }
 
     public class PersonalInformationDto
@@ -25,14 +25,14 @@ namespace CapitalPlacementTask.Application.DTO.ProgramForm
         public string IdNumber { get; set; }
         public DateTime DateOfBirth { get; set; }
         public Gender Gender { get; set; }
-        public List<QuestionDTO> CustomQuestions { get; set; } = [];
+        public List<QuestionDTO>? CustomQuestions { get; set; } = new();
 
     }
     public class QuestionDTO
     {
         public required QuestionType QuestionType { get; set; }
         public required string Question { get; set; }
-        public List<string>? Choices { get; set; }
+        public List<string>? Choices { get; set; } 
         public int? MaxChoices { get; set; }
         public bool? HasOtherOption { get; set; }
     }

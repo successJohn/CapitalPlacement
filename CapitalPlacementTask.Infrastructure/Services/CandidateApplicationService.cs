@@ -69,7 +69,7 @@ namespace CapitalPlacementTask.Infrastructure.Services
             
             await _applicationFormContainer.CreateItemAsync(newCandidateApplication);
 
-            return new BaseResponse<string>("Created");
+            return new BaseResponse<string>("Created",newCandidateApplication.id.ToString());
         }
 
 

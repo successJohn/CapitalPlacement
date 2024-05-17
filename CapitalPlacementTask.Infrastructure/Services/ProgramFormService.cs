@@ -34,6 +34,7 @@ namespace CapitalPlacementTask.Infrastructure.Services
                 Description = programDto.Description,
                 PersonalInformation = new PersonalInformation
                 {
+                    id = Guid.NewGuid(),
                     FirstName = programDto.PersonalInformation.FirstName,
                     LastName = programDto.PersonalInformation.LastName,
                     Email = programDto.PersonalInformation.Email,
@@ -50,12 +51,11 @@ namespace CapitalPlacementTask.Infrastructure.Services
                 return new BaseResponse<string>(personalInformationQuestion.ResponseMessage, 400);
             }
 
-            program.PersonalInformation.CustomQuestions.AddRange(personalInformationQuestion.Data);
+            //program.PersonalInformation.CustomQuestions?.AddRange(personalInformationQuestion.Data);
 
-            program.id = Guid.NewGuid();
             await _programDetailContainer.CreateItemAsync(program);
 
-            return new BaseResponse<string>("Created");
+            return new BaseResponse<string>(program.id.ToString());
         }
 
         private BaseResponse<List<CustomQuestion>> CreateAdditionalQuestions(List<QuestionDTO> additionalQuestions)
