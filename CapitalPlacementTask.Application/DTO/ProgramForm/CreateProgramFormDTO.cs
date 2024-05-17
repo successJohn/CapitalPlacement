@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CapitalPlacementTask.Application.DTO.ProgramForm
 {
-    public class CreateProgramFormDto
+    public class CreateProgramFormDTO
     {
         public required string Title { get; set; }
         public required string Description { get; set; }

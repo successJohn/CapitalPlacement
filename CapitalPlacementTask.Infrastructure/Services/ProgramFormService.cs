@@ -25,7 +25,7 @@ namespace CapitalPlacementTask.Infrastructure.Services
             _programDetailContainer = cosmosClient.GetContainer(databaseName, "ProgramDetail");
         }
 
-        public async Task<BaseResponse<string>> CreateAsync(CreateProgramFormDto programDto)
+        public async Task<BaseResponse<string>> CreateAsync(CreateProgramFormDTO programDto)
         {
             var program = new ProgramForm
             {
@@ -115,7 +115,7 @@ namespace CapitalPlacementTask.Infrastructure.Services
         }
 
 
-        public async Task<BaseResponse<bool>> UpdateAsync(Guid id, CreateProgramFormDto programDto)
+        public async Task<BaseResponse<bool>> UpdateAsync(Guid id, CreateProgramFormDTO programDto)
         {
             var applicationForm = await _programDetailContainer.ReadItemAsync<ProgramForm>(id.ToString(), new PartitionKey(id.ToString()));
 

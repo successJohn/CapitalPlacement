@@ -10,7 +10,7 @@ namespace CapitalPlacementTask.Application.Interfaces
 {
     public interface IProgramFormService
     {
-        Task<BaseResponse<string>> CreateAsync(CreateProgramFormDto programDto);
-        Task<BaseResponse<bool>> UpdateAsync(Guid id, CreateProgramFormDto programDto);
+        Task<BaseResponse<string>> CreateAsync(CreateProgramFormDTO programDto);
+        Task<BaseResponse<bool>> UpdateAsync(Guid id, CreateProgramFormDTO programDto);
     }
 }

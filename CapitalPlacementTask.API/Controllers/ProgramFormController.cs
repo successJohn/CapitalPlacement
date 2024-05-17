@@ -1,4 +1,5 @@
-﻿using CapitalPlacementTask.Application.DTO.ProgramForm;
+﻿using CapitalPlacementTask.Application.DTO.CandidateApplication;
+using CapitalPlacementTask.Application.DTO.ProgramForm;
 using CapitalPlacementTask.Application.Interfaces;
 using CapitalPlacementTask.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +17,7 @@ namespace CapitalPlacementTask.API.Controllers
             _programFormService = programFormService;
         }
         [HttpPost]
-        public async Task<IActionResult> Create(CreateProgramFormDto programDto)
+        public async Task<IActionResult> Create(CreateProgramFormDTO programDto)
         {
             var result = await _programFormService.CreateAsync(programDto);
 
@@ -25,7 +26,7 @@ namespace CapitalPlacementTask.API.Controllers
         }
 
         [HttpPut("{programId}")]
-        public async Task<IActionResult> Update(Guid programId, CreateProgramFormDto programDto)
+        public async Task<IActionResult> Update(Guid programId, CreateProgramFormDTO programDto)
         {
             var result = await _programFormService.UpdateAsync(programId, programDto);
 
