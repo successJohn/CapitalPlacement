@@ -34,7 +34,7 @@ namespace CapitalPlacementTask.Infrastructure
             });
 
             services.AddScoped<IProgramFormService, ProgramFormService>();
-
+            services.AddScoped<IApplicationService, CandidateApplicationService>();
             return services;
         }
     }
