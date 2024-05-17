@@ -51,7 +51,7 @@ namespace CapitalPlacementTask.Infrastructure.Services
                 return new BaseResponse<string>(personalInformationQuestion.ResponseMessage, 400);
             }
 
-            //program.PersonalInformation.CustomQuestions?.AddRange(personalInformationQuestion.Data);
+            program.PersonalInformation.CustomQuestions?.AddRange(personalInformationQuestion.Data);
 
             await _programDetailContainer.CreateItemAsync(program);
 
